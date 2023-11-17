@@ -31,7 +31,6 @@ services:
       - type: bind
         source: ./
         target: /app
-
     ports:
       - 9090:9090
     tty: true
