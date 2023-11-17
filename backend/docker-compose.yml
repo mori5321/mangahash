@@ -1,6 +1,26 @@
 version: "3.8"
 
 services:
+  db:
+    container_name: db
+    image: postgres:13.12-alpine@sha256:ebb415b13f1ee1a2523114d5e46082044d1c62816fd108c666c53eef5878f5f3
+    environment:
+      - POSTGRES_DB=docker
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_INITDB_ARGS="--encoding=UTF-8"
+    ports:
+      - '${DATABASE_PORT:?}:5432'
+    volumes:
+      - type: volume
+        source: db
+        target: /var/lib/postgresql/data
+    command: postgres -c log_destination=stderr -c log_statement=all -c log_connections=on -c log_disconnections=on
+    logging:
+      driver: json-file
+      options:
+        max-size: '10k'
+        max-file: '5'
   api:
     container_name: api
     build:
@@ -16,3 +36,6 @@ services:
       - 9090:9090
     tty: true
     command: sh -c 'go mod tidy && air'
+
+volumes:
+  db:
