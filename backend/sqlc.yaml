@@ -1,0 +1,18 @@
+version: "2"
+cloud:
+    organization: ""
+    project: ""
+    hostname: ""
+sql: 
+  - engine: "postgresql"
+    queries: "sqlc/query.sql"
+    schema: "sqlc/schema.sql"
+    gen:
+      go:
+        package: "queries"
+        out: "queries"
+        sql_package: "pgx/v5"
+overrides:
+    go: null
+plugins: []
+rules: []

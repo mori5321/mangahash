@@ -14,3 +14,12 @@ migration.up:
 
 migration.down:
 	docker compose exec api goose -dir migrations postgres "user=postgres dbname=docker host=db password=password sslmode=disable" down
+
+migration.status:
+	docker compose exec api goose -dir migrations postgres "user=postgres dbname=docker host=db password=password sslmode=disable" status
+
+dump.schema:
+	docker compose exec db pg_dump -U postgres -d docker --schema-only > schema.sql
+
+sqlc.generate:
+	docker compose exec api sqlc generate
