@@ -15,7 +15,7 @@ type GooseDbVersion struct {
 	Tstamp    pgtype.Timestamp
 }
 
-type Test struct {
-	ID   pgtype.UUID
-	Name string
+type Todo struct {
+	ID    pgtype.UUID
+	Title string
 }

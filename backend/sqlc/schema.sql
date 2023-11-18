@@ -57,16 +57,16 @@ ALTER SEQUENCE public.goose_db_version_id_seq OWNED BY public.goose_db_version.i
 
 
 --
--- Name: test; Type: TABLE; Schema: public; Owner: postgres
+-- Name: todos; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.test (
+CREATE TABLE public.todos (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    name character varying(255) NOT NULL
+    title character varying(255) NOT NULL
 );
 
 
-ALTER TABLE public.test OWNER TO postgres;
+ALTER TABLE public.todos OWNER TO postgres;
 
 --
 -- Name: goose_db_version id; Type: DEFAULT; Schema: public; Owner: postgres
@@ -84,11 +84,11 @@ ALTER TABLE ONLY public.goose_db_version
 
 
 --
--- Name: test test_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: todos todos_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.test
-    ADD CONSTRAINT test_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.todos
+    ADD CONSTRAINT todos_pkey PRIMARY KEY (id);
 
 
 --

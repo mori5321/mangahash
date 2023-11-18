@@ -9,10 +9,11 @@ import (
 type ErrorCode string
 
 const (
-	MethodNotAllowed ErrorCode = "METHOD_NOT_ALLOWED"
-	NotFound         ErrorCode = "NOT_FOUND"
-	InvalidRequest   ErrorCode = "INVALID_REQUEST"
-	EncodingError    ErrorCode = "ENCODING_ERROR"
+	MethodNotAllowed   ErrorCode = "METHOD_NOT_ALLOWED"
+	NotFound           ErrorCode = "NOT_FOUND"
+	InvalidRequest     ErrorCode = "INVALID_REQUEST"
+	EncodingError      ErrorCode = "ENCODING_ERROR"
+	InteralServerError ErrorCode = "INTERNAL_SERVER_ERROR"
 )
 
 type ErrorResponse struct {

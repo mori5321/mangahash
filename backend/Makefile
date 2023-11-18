@@ -10,16 +10,18 @@ migration.new:
 	docker compose exec api goose -dir migrations create $(name).sql sql
 
 migration.up:
-	docker compose exec api goose -dir migrations postgres "user=postgres dbname=docker host=db password=password sslmode=disable" up
+	docker compose exec api goose -dir migrations postgres "user=postgres dbname=docker host=db password=password sslmode=disable" up \
+	make dump.schema
 
 migration.down:
-	docker compose exec api goose -dir migrations postgres "user=postgres dbname=docker host=db password=password sslmode=disable" down
+	docker compose exec api goose -dir migrations postgres "user=postgres dbname=docker host=db password=password sslmode=disable" down \
+	make dump.schema
 
 migration.status:
 	docker compose exec api goose -dir migrations postgres "user=postgres dbname=docker host=db password=password sslmode=disable" status
 
-dump.schema:
-	docker compose exec db pg_dump -U postgres -d docker --schema-only > schema.sql
+schema.dump:
+	docker compose exec db pg_dump -U postgres -d docker --schema-only > sqlc/schema.sql
 
-sqlc.generate:
+sqlc.gen:
 	docker compose exec api sqlc generate

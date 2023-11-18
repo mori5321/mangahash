@@ -7,22 +7,51 @@ package queries
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const listTests = `-- name: ListTests :many
-SELECT id, name FROM test LIMIT 10
+const createTodo = `-- name: CreateTodo :one
+INSERT INTO todos (title) VALUES ($1) RETURNING id, title
 `
 
-func (q *Queries) ListTests(ctx context.Context) ([]Test, error) {
-	rows, err := q.db.Query(ctx, listTests)
+func (q *Queries) CreateTodo(ctx context.Context, title string) (Todo, error) {
+	row := q.db.QueryRow(ctx, createTodo, title)
+	var i Todo
+	err := row.Scan(&i.ID, &i.Title)
+	return i, err
+}
+
+const getTodo = `-- name: GetTodo :one
+SELECT id, title FROM todos WHERE id = $1
+`
+
+func (q *Queries) GetTodo(ctx context.Context, id pgtype.UUID) (Todo, error) {
+	row := q.db.QueryRow(ctx, getTodo, id)
+	var i Todo
+	err := row.Scan(&i.ID, &i.Title)
+	return i, err
+}
+
+const listTodos = `-- name: ListTodos :many
+SELECT id, title FROM todos LIMIT $1 OFFSET $2
+`
+
+type ListTodosParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) ListTodos(ctx context.Context, arg ListTodosParams) ([]Todo, error) {
+	rows, err := q.db.Query(ctx, listTodos, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Test
+	var items []Todo
 	for rows.Next() {
-		var i Test
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		var i Todo
+		if err := rows.Scan(&i.ID, &i.Title); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
