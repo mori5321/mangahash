@@ -12,7 +12,9 @@ sql:
         package: "queries"
         out: "queries"
         sql_package: "pgx/v5"
-overrides:
-    go: null
+        overrides:
+          - db_type: "uuid"
+            go_type: "github.com/gofrs/uuid.UUID"
+
 plugins: []
 rules: []

@@ -1,10 +1,15 @@
 -- name: ListTodos :many
 SELECT id, title FROM todos LIMIT $1 OFFSET $2;
 
--- name: GetTodo :one
+-- name: FetchTodo :one
 SELECT id, title FROM todos WHERE id = $1;
 
--- name: CreateTodo :one
-INSERT INTO todos (title) VALUES ($1) RETURNING id, title;
+-- name: CreateTodo :exec
+INSERT INTO todos (title) VALUES ($1);
 
+-- name: UpdateTodo :exec
+UPDATE todos SET title = $1 WHERE id = $2;
+
+-- name: DeleteTodo :exec
+DELETE FROM todos WHERE id = $1;
 

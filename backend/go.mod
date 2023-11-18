@@ -2,7 +2,10 @@ module github.com/mori5321/mangahash/backend
 
 go 1.21.3
 
-require github.com/jackc/pgx/v5 v5.5.0
+require (
+	github.com/gofrs/uuid v4.4.0+incompatible
+	github.com/jackc/pgx/v5 v5.5.0
+)
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect

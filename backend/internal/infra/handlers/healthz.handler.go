@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
+
+	"github.com/mori5321/mangahash/backend/internal/infra/errs"
 )
 
 type HealthzResponse struct {
@@ -15,11 +16,6 @@ func HealthzHandler(w http.ResponseWriter, r *http.Request) {
 		respondWithJson(w, HealthzResponse{Status: "OK"}, http.StatusOK)
 		w.WriteHeader(http.StatusOK)
 	default:
-		respondWithError(w, ErrorResponse{
-			MethodNotAllowed,
-			[]string{
-				fmt.Sprintf("Method %s not allowed for /healthz", r.Method),
-			},
-		})
+		handleError(w, errs.MethodNotAllowedError)
 	}
 }

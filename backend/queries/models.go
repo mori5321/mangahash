@@ -5,6 +5,7 @@
 package queries
 
 import (
+	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -16,6 +17,6 @@ type GooseDbVersion struct {
 }
 
 type Todo struct {
-	ID    pgtype.UUID
+	ID    uuid.UUID
 	Title string
 }

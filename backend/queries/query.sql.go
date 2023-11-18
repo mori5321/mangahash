@@ -8,26 +8,33 @@ package queries
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/gofrs/uuid"
 )
 
-const createTodo = `-- name: CreateTodo :one
-INSERT INTO todos (title) VALUES ($1) RETURNING id, title
+const createTodo = `-- name: CreateTodo :exec
+INSERT INTO todos (title) VALUES ($1)
 `
 
-func (q *Queries) CreateTodo(ctx context.Context, title string) (Todo, error) {
-	row := q.db.QueryRow(ctx, createTodo, title)
-	var i Todo
-	err := row.Scan(&i.ID, &i.Title)
-	return i, err
+func (q *Queries) CreateTodo(ctx context.Context, title string) error {
+	_, err := q.db.Exec(ctx, createTodo, title)
+	return err
 }
 
-const getTodo = `-- name: GetTodo :one
+const deleteTodo = `-- name: DeleteTodo :exec
+DELETE FROM todos WHERE id = $1
+`
+
+func (q *Queries) DeleteTodo(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteTodo, id)
+	return err
+}
+
+const fetchTodo = `-- name: FetchTodo :one
 SELECT id, title FROM todos WHERE id = $1
 `
 
-func (q *Queries) GetTodo(ctx context.Context, id pgtype.UUID) (Todo, error) {
-	row := q.db.QueryRow(ctx, getTodo, id)
+func (q *Queries) FetchTodo(ctx context.Context, id uuid.UUID) (Todo, error) {
+	row := q.db.QueryRow(ctx, fetchTodo, id)
 	var i Todo
 	err := row.Scan(&i.ID, &i.Title)
 	return i, err
@@ -60,4 +67,18 @@ func (q *Queries) ListTodos(ctx context.Context, arg ListTodosParams) ([]Todo, e
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateTodo = `-- name: UpdateTodo :exec
+UPDATE todos SET title = $1 WHERE id = $2
+`
+
+type UpdateTodoParams struct {
+	Title string
+	ID    uuid.UUID
+}
+
+func (q *Queries) UpdateTodo(ctx context.Context, arg UpdateTodoParams) error {
+	_, err := q.db.Exec(ctx, updateTodo, arg.Title, arg.ID)
+	return err
 }

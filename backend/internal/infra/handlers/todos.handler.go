@@ -1,174 +1,85 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mori5321/mangahash/backend/queries"
+	"github.com/mori5321/mangahash/backend/internal/infra/errs"
+	"github.com/mori5321/mangahash/backend/internal/usecase"
 )
 
-type TodoResponse struct {
-	Id    string `json:"id"`
-	Title string `json:"title"`
-}
-
-type CreateTodoRequest struct {
-	Title string `json:"title"`
-}
-
-func (r CreateTodoRequest) Validate() error {
-	var errs []error
-
-	if r.Title == "" {
-		errs = append(errs, errors.New("title is required"))
-	}
-
-	if len(errs) > 0 {
-		return errors.Join(errs...)
-	}
-
-	return nil
-}
-
-type TodosResponse = []TodoResponse
-
-func TodosHandler(dbConn *pgx.Conn) http.HandlerFunc {
+func TodosHandler(stores usecase.Stores) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			listHandler(w, r, dbConn)
+			todos, err := listHandler(r, stores)
+			handleResponse(w, todos, http.StatusOK, err)
 		case http.MethodPost:
-			addHandler(w, r, dbConn)
+			todo, err := addHandler(r, stores)
+			handleResponse(w, todo, http.StatusCreated, err)
 		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			handleError(w, errs.MethodNotAllowedError)
 		}
 	}
 }
 
-func listHandler(w http.ResponseWriter, r *http.Request, dbConn *pgx.Conn) {
-	todos, err := queries.New(dbConn).ListTodos(context.Background(), queries.ListTodosParams{
-		Limit:  10,
-		Offset: 0,
-	})
+func listHandler(r *http.Request, stores usecase.Stores) ([]usecase.TodoDTO, error) {
+	u := usecase.NewTodoUsecase(stores)
+	todos, err := u.ListTodos(nil, nil)
 
 	if err != nil {
-		respondWithError(w, ErrorResponse{
-			ErrorCode:     InteralServerError,
-			ErrorMessages: []string{fmt.Sprintf("Failed to list todos: %s", err)},
-		})
-		return
+		return nil, err
 	}
 
 	if len(todos) == 0 {
-		respondWithJson(w, TodosResponse{}, http.StatusOK)
-		return
+		return []usecase.TodoDTO{}, nil
 	}
 
-	respondWithJson(w, todos, http.StatusOK)
+	return todos, nil
 }
 
-func addHandler(w http.ResponseWriter, r *http.Request, dbConn *pgx.Conn) {
-	var req CreateTodoRequest
+func addHandler(r *http.Request, stores usecase.Stores) (*usecase.TodoDTO, error) {
+	var input usecase.CreateTodoInput
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondWithError(w, ErrorResponse{
-			ErrorCode: InvalidRequest,
-			ErrorMessages: []string{
-				fmt.Sprintf("Failed to decode request body: %s", err),
-			},
-		})
-		return
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		return nil, fmt.Errorf("Invalid Request Body %s", input, errs.InvalidRequestError)
 	}
 
-	if err := req.Validate(); err != nil {
-		var msgs []string
-		if errs, ok := err.(interface{ Unwrap() []error }); ok {
-			for _, err := range errs.Unwrap() {
-				msgs = append(msgs, err.Error())
-			}
-		}
-
-		if len(msgs) == 0 {
-			msgs = append(msgs, "Failed to validate request")
-		}
-
-		respondWithError(w, ErrorResponse{
-			ErrorCode:     InvalidRequest,
-			ErrorMessages: msgs,
-		})
-		return
-	}
-
-	newTodo, err := queries.New(dbConn).CreateTodo(
-		context.Background(),
-		req.Title,
-	)
+	u := usecase.NewTodoUsecase(stores)
+	todo, err := u.AddTodo(input)
 
 	if err != nil {
-		respondWithError(w, ErrorResponse{
-			ErrorCode:     InteralServerError,
-			ErrorMessages: []string{fmt.Sprintf("Failed to create todo: %s", err)},
-		})
-		return
+		return nil, err
 	}
 
-	respondWithJson(w, newTodo, http.StatusOK)
+	return todo, nil
 }
 
-func TodoHandler(dbConn *pgx.Conn) http.HandlerFunc {
+func TodoHandler(stores usecase.Stores) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		getParams(r, "/todos")
 
 		switch r.Method {
 		case http.MethodGet:
-			getHandler(w, r, dbConn)
+			todo, err := fetchHandler(r, stores)
+			handleResponse(w, todo, http.StatusOK, err)
 		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			handleError(w, fmt.Errorf("Method Not Allowed: %s %w", r.Method, errs.MethodNotAllowedError))
 		}
 	}
 }
 
-func getHandler(w http.ResponseWriter, r *http.Request, dbConn *pgx.Conn) {
+func fetchHandler(r *http.Request, stores usecase.Stores) (*usecase.TodoDTO, error) {
 	params := getParams(r, "/todos")
-	var id pgtype.UUID
-	if err := id.Scan(params[0]); err != nil {
-		respondWithError(w, ErrorResponse{
-			ErrorCode:     InvalidRequest,
-			ErrorMessages: []string{fmt.Sprintf("Failed to parse UUID: %s", err)},
-		})
-		return
-	}
+	id := params[0]
 
-	todo, err := queries.New(dbConn).GetTodo(
-		context.Background(),
-		id,
-	)
+	u := usecase.NewTodoUsecase(stores)
+	todo, err := u.FetchTodoByID(id)
 
 	if err != nil {
-		respondWithError(w, ErrorResponse{
-			ErrorCode:     NotFound,
-			ErrorMessages: []string{fmt.Sprintf("Failed to get todo: %s", err)},
-		})
-		return
+		return nil, err
 	}
 
-	idStr, err := todo.ID.Value()
-	if err != nil {
-		respondWithError(w, ErrorResponse{
-			ErrorCode:     InteralServerError,
-			ErrorMessages: []string{fmt.Sprintf("Failed to get todo: %s", err)},
-		})
-	}
-
-	todoResponse := TodoResponse{
-		Id:    idStr.(string),
-		Title: todo.Title,
-	}
-
-	respondWithJson(w, todoResponse, http.StatusOK)
+	return todo, nil
 }
