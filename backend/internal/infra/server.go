@@ -34,6 +34,9 @@ func router(dbConn *pgx.Conn) *http.ServeMux {
 
 func RunApp() {
 	ctx := context.Background()
+	// From local
+	// dbConn, err := pgx.Connect(ctx, "user=postgres dbname=docker sslmode=disable host=localhost port=5430 password=password")
+	// For docker-compose
 	dbConn, err := pgx.Connect(ctx, "user=postgres dbname=docker sslmode=disable host=db password=password")
 	if err != nil {
 		log.Fatal(err)
