@@ -1,4 +1,4 @@
-package infra
+package internal
 
 import (
 	"context"
@@ -7,10 +7,8 @@ import (
 	"net/http"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/mori5321/mangahash/backend/internal/infra/generators"
-	"github.com/mori5321/mangahash/backend/internal/infra/handlers"
-	"github.com/mori5321/mangahash/backend/internal/infra/repositories"
-	"github.com/mori5321/mangahash/backend/internal/usecase"
+	"github.com/mori5321/mangahash/backend/internal/healthz"
+	"github.com/mori5321/mangahash/backend/internal/todo"
 )
 
 func router(dbConn *pgx.Conn) *http.ServeMux {
@@ -18,16 +16,10 @@ func router(dbConn *pgx.Conn) *http.ServeMux {
 	// https://ema-hiro.hatenablog.com/entry/2018/10/22/015427
 	// https://journal.lampetty.net/entry/understanding-http-handler-in-go
 
-	// 全repoをここで定義する
-	todoRepository := repositories.NewTodoRepositoryPostgres(dbConn)
-	uuid := generators.NewUUIDGenerator()
-
-	stores := usecase.NewStores(uuid, todoRepository)
-
 	mux := http.NewServeMux()
-	mux.HandleFunc("/healthz", handlers.HealthzHandler)
-	mux.HandleFunc("/todos", handlers.TodosHandler(stores))
-	mux.HandleFunc("/todos/", handlers.TodoHandler(stores))
+	mux.HandleFunc("/healthz", healthz.HealthzHandler)
+	mux.HandleFunc("/todos", todo.TodosHandler(dbConn))
+	mux.HandleFunc("/todos/", todo.TodoHandler(dbConn))
 
 	return mux
 }

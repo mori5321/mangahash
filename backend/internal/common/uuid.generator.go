@@ -1,4 +1,4 @@
-package generators
+package common
 
 import (
 	"github.com/gofrs/uuid"

@@ -1,13 +1,10 @@
-package handlers
+package common
 
 import (
 	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
-
-	"github.com/mori5321/mangahash/backend/internal/infra/errs"
-	"github.com/mori5321/mangahash/backend/internal/usecase"
 )
 
 type ErrorCode string
@@ -26,36 +23,36 @@ type ErrorResponse struct {
 	ErrorMessages []string  `json:"errorMessages"`
 }
 
-func handleResponse(w http.ResponseWriter, body interface{}, successStatus int, err error) {
+func HandleResponse(w http.ResponseWriter, body interface{}, successStatus int, err error) {
 	if err != nil {
-		handleError(w, err)
+		HandleError(w, err)
 		return
 	}
 
-	handleSuccess(w, successStatus, body)
+	HandleSuccess(w, body, successStatus)
 }
 
-func handleSuccess(w http.ResponseWriter, status int, body interface{}) {
+func HandleSuccess(w http.ResponseWriter, body interface{}, status int) {
 	respondWithJson(w, body, status)
 }
 
-func handleError(w http.ResponseWriter, err error) {
+func HandleError(w http.ResponseWriter, err error) {
 	var status int
 	var errorCode ErrorCode
 
-	if errors.Is(err, errs.NotFoundError) {
+	if errors.Is(err, NotFoundError) {
 		status = http.StatusNotFound
 		errorCode = NotFound
-	} else if errors.Is(err, errs.InvalidRequestError) {
+	} else if errors.Is(err, InvalidRequestError) {
 		status = http.StatusBadRequest
 		errorCode = InvalidRequest
-	} else if errors.Is(err, errs.MethodNotAllowedError) {
+	} else if errors.Is(err, MethodNotAllowedError) {
 		status = http.StatusMethodNotAllowed
 		errorCode = MethodNotAllowed
-	} else if errors.Is(err, errs.InternalServerError) {
+	} else if errors.Is(err, InternalServerError) {
 		status = http.StatusInternalServerError
 		errorCode = InteralServerError
-	} else if errors.Is(err, usecase.InvalidIDError) {
+	} else if errors.Is(err, InvalidIDError) {
 		status = http.StatusBadRequest
 		errorCode = InvalidRequest
 	} else {
@@ -82,7 +79,7 @@ func respondWithJson(w http.ResponseWriter, body interface{}, status int) {
 	}
 }
 
-func getParams(r *http.Request, prefix string) []string {
+func GetParams(r *http.Request, prefix string) []string {
 	url := r.URL.String()
 	path := strings.TrimPrefix(url, prefix)
 

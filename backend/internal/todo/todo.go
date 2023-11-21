@@ -23,3 +23,8 @@ type TodoRepository interface {
 	Store(todo Todo) error
 	Delete(id string) error
 }
+
+type IDGenerator interface {
+	Gen() string
+	Valid(s string) bool
+}

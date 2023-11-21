@@ -1,12 +1,11 @@
-package repositories
+package todo
 
 import (
 	"context"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/mori5321/mangahash/backend/internal/core/todo"
-	"github.com/mori5321/mangahash/backend/internal/infra/errs"
+	"github.com/mori5321/mangahash/backend/internal/common"
 	"github.com/mori5321/mangahash/backend/queries"
 )
 
@@ -18,7 +17,7 @@ func NewTodoRepositoryPostgres(dbConn *pgx.Conn) *TodoRepositoryPostgres {
 	return &TodoRepositoryPostgres{dbConn: dbConn}
 }
 
-func (repo *TodoRepositoryPostgres) List(pagination *todo.ListPagination) ([]todo.Todo, error) {
+func (repo *TodoRepositoryPostgres) List(pagination *ListPagination) ([]Todo, error) {
 	ctx := context.Background() // ?: context の扱いよくわからない
 
 	query := queries.New(repo.dbConn)
@@ -27,7 +26,7 @@ func (repo *TodoRepositoryPostgres) List(pagination *todo.ListPagination) ([]tod
 	defaultOffset := int32(0)
 
 	if pagination == nil {
-		pagination = &todo.ListPagination{
+		pagination = &ListPagination{
 			Limit:  defaultLimit,
 			Offset: defaultOffset,
 		}
@@ -42,7 +41,7 @@ func (repo *TodoRepositoryPostgres) List(pagination *todo.ListPagination) ([]tod
 		return nil, err
 	}
 
-	todos := make([]todo.Todo, len(models))
+	todos := make([]Todo, len(models))
 	for i, model := range models {
 		todo := repo.toEntity(model)
 		todos[i] = todo
@@ -51,18 +50,18 @@ func (repo *TodoRepositoryPostgres) List(pagination *todo.ListPagination) ([]tod
 	return todos, nil
 }
 
-func (repo *TodoRepositoryPostgres) Store(todo todo.Todo) error {
+func (repo *TodoRepositoryPostgres) Store(todo Todo) error {
 	return nil
 }
 
-func (repo *TodoRepositoryPostgres) Fetch(id string) (*todo.Todo, error) {
+func (repo *TodoRepositoryPostgres) Fetch(id string) (*Todo, error) {
 	query := queries.New(repo.dbConn)
 
 	uid := uuid.Must(uuid.FromString(id))
 
 	model, err := query.FetchTodo(context.TODO(), uid)
 	if err != nil {
-		return nil, errs.NotFoundError
+		return nil, common.NotFoundError
 	}
 
 	todo := repo.toEntity(model)
@@ -74,6 +73,6 @@ func (repo *TodoRepositoryPostgres) Delete(id string) error {
 	return nil
 }
 
-func (repo *TodoRepositoryPostgres) toEntity(todoModel queries.Todo) todo.Todo {
-	return todo.NewTodo(todoModel.ID.String(), todoModel.Title)
+func (repo *TodoRepositoryPostgres) toEntity(todoModel queries.Todo) Todo {
+	return NewTodo(todoModel.ID.String(), todoModel.Title)
 }
