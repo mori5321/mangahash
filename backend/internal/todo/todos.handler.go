@@ -21,7 +21,6 @@ func TodosHandler(dbConn *pgx.Conn) http.HandlerFunc {
 			common.HandleResponse(w, todos, http.StatusOK, err)
 		case http.MethodPost:
 			todo, err := addHandler(r, stores)
-			fmt.Println(todo, err)
 			common.HandleResponse(w, todo, http.StatusCreated, err)
 		default:
 			common.HandleError(w, common.MethodNotAllowedError)
