@@ -38,8 +38,10 @@ services:
       # - '5432:5432'
   api:
     container_name: api
+    image: mangahash-api:deepblue
     build:
       context: .
+      target: dev
       dockerfile: ./Dockerfile
     working_dir: /app
     volumes:

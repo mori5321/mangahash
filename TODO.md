@@ -1,2 +1,4 @@
 - [ ] Crawler を開発
   - https://github.com/michimani/gotwi これがよさそう
+- [ ] infraはCloud Runにしましょう
+    - [ ] k8sさわりたかったらあとで。全体が完成してからやれ。
