@@ -51,6 +51,10 @@ func (i CreateTodoInput) Validate() error {
 	return nil
 }
 
+type UpdateTodoInput struct {
+	Title string `json:"title"`
+}
+
 func (u TodoUsecase) toDTO(todo *Todo) TodoDTO {
 	return TodoDTO{
 		ID:    todo.ID,
@@ -107,4 +111,29 @@ func (u TodoUsecase) AddTodo(input CreateTodoInput) (*TodoDTO, error) {
 	dto := u.toDTO(&newTodo)
 
 	return &dto, nil
+}
+
+func (u TodoUsecase) UpdateTodo(id string, input UpdateTodoInput) (*TodoDTO, error) {
+	todo := NewTodo(
+		id,
+		input.Title,
+	)
+
+	err := u.stores.TodoRepo.Store(todo)
+	if err != nil {
+		return nil, err
+	}
+
+	dto := u.toDTO(&todo)
+
+	return &dto, nil
+}
+
+func (u TodoUsecase) DeleteTodo(id string) error {
+	err := u.stores.TodoRepo.Delete(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -73,6 +73,12 @@ func TodoHandler(dbConn *pgx.Conn) http.HandlerFunc {
 		case http.MethodGet:
 			todo, err := fetchHandler(r, stores)
 			common.HandleResponse(w, todo, http.StatusOK, err)
+		case http.MethodPut:
+			todo, err := updateHandler(r, stores)
+			common.HandleResponse(w, todo, http.StatusOK, err)
+		case http.MethodDelete:
+			err := deleteHandler(r, stores)
+			common.HandleResponse(w, nil, http.StatusOK, err)
 		default:
 			common.HandleError(w, fmt.Errorf("Method Not Allowed: %s %w", r.Method, common.MethodNotAllowedError))
 		}
@@ -91,4 +97,36 @@ func fetchHandler(r *http.Request, stores Stores) (*TodoDTO, error) {
 	}
 
 	return todo, nil
+}
+
+func updateHandler(r *http.Request, stores Stores) (*TodoDTO, error) {
+	params := common.GetParams(r, "/todos")
+	id := params[0]
+
+	var input UpdateTodoInput
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		return nil, fmt.Errorf("Invalid Request Body %s %w", input, common.InvalidRequestError)
+	}
+
+	u := NewTodoUsecase(stores)
+	todo, err := u.UpdateTodo(id, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return todo, nil
+}
+
+func deleteHandler(r *http.Request, stores Stores) error {
+	params := common.GetParams(r, "/todos")
+	id := params[0]
+
+	u := NewTodoUsecase(stores)
+	if err := u.DeleteTodo(id); err != nil {
+		return err
+	}
+
+	return nil
 }

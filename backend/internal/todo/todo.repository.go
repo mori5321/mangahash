@@ -96,7 +96,16 @@ func (repo *TodoRepositoryPostgres) Fetch(id string) (*Todo, error) {
 }
 
 func (repo *TodoRepositoryPostgres) Delete(id string) error {
-	return nil
+	query := queries.New(repo.dbConn)
+
+	uid := uuid.Must(uuid.FromString(id))
+
+	err := query.DeleteTodo(
+		context.TODO(),
+		uid,
+	)
+
+	return err
 }
 
 func (repo *TodoRepositoryPostgres) toEntity(todoModel queries.AppTodo) Todo {
