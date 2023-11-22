@@ -51,7 +51,33 @@ func (repo *TodoRepositoryPostgres) List(pagination *ListPagination) ([]Todo, er
 }
 
 func (repo *TodoRepositoryPostgres) Store(todo Todo) error {
-	return nil
+	ctx := context.Background() // ?: context の扱いよくわからない
+	query := queries.New(repo.dbConn)
+
+	id, err := uuid.FromString(todo.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = query.FetchTodo(ctx, id)
+	if err != nil {
+		err := query.CreateTodo(
+			ctx,
+			todo.Title,
+		)
+
+		return err
+	} else {
+		err := query.UpdateTodo(
+			ctx,
+			queries.UpdateTodoParams{
+				ID:    id,
+				Title: todo.Title,
+			},
+		)
+
+		return err
+	}
 }
 
 func (repo *TodoRepositoryPostgres) Fetch(id string) (*Todo, error) {
@@ -73,6 +99,6 @@ func (repo *TodoRepositoryPostgres) Delete(id string) error {
 	return nil
 }
 
-func (repo *TodoRepositoryPostgres) toEntity(todoModel queries.Todo) Todo {
+func (repo *TodoRepositoryPostgres) toEntity(todoModel queries.AppTodo) Todo {
 	return NewTodo(todoModel.ID.String(), todoModel.Title)
 }

@@ -6,17 +6,9 @@ package queries
 
 import (
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type GooseDbVersion struct {
-	ID        int32
-	VersionID int64
-	IsApplied bool
-	Tstamp    pgtype.Timestamp
-}
-
-type Todo struct {
+type AppTodo struct {
 	ID    uuid.UUID
 	Title string
 }

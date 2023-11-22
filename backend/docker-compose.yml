@@ -12,6 +12,7 @@ services:
       - CGO_ENABLED=1
     ports:
       - '${DATABASE_PORT:?}:5432'
+      # - '5432:5432'
     volumes:
       - type: volume
         source: db
@@ -22,6 +23,19 @@ services:
       options:
         max-size: '10k'
         max-file: '5'
+  # TODO: build ephemeral test db
+  testdb:
+    container_name: testdb
+    image: postgres:13.12-alpine@sha256:ebb415b13f1ee1a2523114d5e46082044d1c62816fd108c666c53eef5878f5f3
+    environment:
+      - POSTGRES_DB=test
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_INITDB_ARGS="--encoding=UTF-8"
+      - CGO_ENABLED=1
+    ports:
+      - '5431:5432'
+      # - '5432:5432'
   api:
     container_name: api
     build:
@@ -32,10 +46,21 @@ services:
       - type: bind
         source: ./
         target: /app
+      - type: volume
+        source: gomod
+        target: /go/pkg/mod
+      - type: volume
+        source: gobuild
+        target: /root/.cache/go-build
+      - type: volume
+        source: gotest
+        target: /root/.cache/go-test
     ports:
       - 9090:9090
-    tty: true
     command: sh -c 'go mod tidy && air'
 
 volumes:
   db:
+  gomod:
+  gobuild:
+  gotest:

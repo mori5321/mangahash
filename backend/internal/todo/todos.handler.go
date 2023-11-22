@@ -21,6 +21,7 @@ func TodosHandler(dbConn *pgx.Conn) http.HandlerFunc {
 			common.HandleResponse(w, todos, http.StatusOK, err)
 		case http.MethodPost:
 			todo, err := addHandler(r, stores)
+			fmt.Println(todo, err)
 			common.HandleResponse(w, todo, http.StatusCreated, err)
 		default:
 			common.HandleError(w, common.MethodNotAllowedError)
@@ -47,7 +48,7 @@ func addHandler(r *http.Request, stores Stores) (*TodoDTO, error) {
 	var input CreateTodoInput
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		return nil, fmt.Errorf("Invalid Request Body %s", input, common.InvalidRequestError)
+		return nil, fmt.Errorf("Invalid Request Body %s %w", input, common.InvalidRequestError)
 	}
 
 	u := NewTodoUsecase(stores)

@@ -16,78 +16,36 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: app; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+CREATE SCHEMA app;
+
+
+ALTER SCHEMA app OWNER TO postgres;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- Name: goose_db_version; Type: TABLE; Schema: public; Owner: postgres
+-- Name: todos; Type: TABLE; Schema: app; Owner: postgres
 --
 
-CREATE TABLE public.goose_db_version (
-    id integer NOT NULL,
-    version_id bigint NOT NULL,
-    is_applied boolean NOT NULL,
-    tstamp timestamp without time zone DEFAULT now()
-);
-
-
-ALTER TABLE public.goose_db_version OWNER TO postgres;
-
---
--- Name: goose_db_version_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.goose_db_version_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.goose_db_version_id_seq OWNER TO postgres;
-
---
--- Name: goose_db_version_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.goose_db_version_id_seq OWNED BY public.goose_db_version.id;
-
-
---
--- Name: todos; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.todos (
+CREATE TABLE app.todos (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     title character varying(255) NOT NULL
 );
 
 
-ALTER TABLE public.todos OWNER TO postgres;
+ALTER TABLE app.todos OWNER TO postgres;
 
 --
--- Name: goose_db_version id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: todos todos_pkey; Type: CONSTRAINT; Schema: app; Owner: postgres
 --
 
-ALTER TABLE ONLY public.goose_db_version ALTER COLUMN id SET DEFAULT nextval('public.goose_db_version_id_seq'::regclass);
-
-
---
--- Name: goose_db_version goose_db_version_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.goose_db_version
-    ADD CONSTRAINT goose_db_version_pkey PRIMARY KEY (id);
-
-
---
--- Name: todos todos_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.todos
+ALTER TABLE ONLY app.todos
     ADD CONSTRAINT todos_pkey PRIMARY KEY (id);
 
 

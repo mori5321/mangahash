@@ -12,7 +12,7 @@ import (
 )
 
 const createTodo = `-- name: CreateTodo :exec
-INSERT INTO todos (title) VALUES ($1)
+INSERT INTO app.todos (title) VALUES ($1)
 `
 
 func (q *Queries) CreateTodo(ctx context.Context, title string) error {
@@ -21,7 +21,7 @@ func (q *Queries) CreateTodo(ctx context.Context, title string) error {
 }
 
 const deleteTodo = `-- name: DeleteTodo :exec
-DELETE FROM todos WHERE id = $1
+DELETE FROM app.todos WHERE id = $1
 `
 
 func (q *Queries) DeleteTodo(ctx context.Context, id uuid.UUID) error {
@@ -30,18 +30,18 @@ func (q *Queries) DeleteTodo(ctx context.Context, id uuid.UUID) error {
 }
 
 const fetchTodo = `-- name: FetchTodo :one
-SELECT id, title FROM todos WHERE id = $1
+SELECT id, title FROM app.todos WHERE id = $1
 `
 
-func (q *Queries) FetchTodo(ctx context.Context, id uuid.UUID) (Todo, error) {
+func (q *Queries) FetchTodo(ctx context.Context, id uuid.UUID) (AppTodo, error) {
 	row := q.db.QueryRow(ctx, fetchTodo, id)
-	var i Todo
+	var i AppTodo
 	err := row.Scan(&i.ID, &i.Title)
 	return i, err
 }
 
 const listTodos = `-- name: ListTodos :many
-SELECT id, title FROM todos LIMIT $1 OFFSET $2
+SELECT id, title FROM app.todos LIMIT $1 OFFSET $2
 `
 
 type ListTodosParams struct {
@@ -49,15 +49,15 @@ type ListTodosParams struct {
 	Offset int32
 }
 
-func (q *Queries) ListTodos(ctx context.Context, arg ListTodosParams) ([]Todo, error) {
+func (q *Queries) ListTodos(ctx context.Context, arg ListTodosParams) ([]AppTodo, error) {
 	rows, err := q.db.Query(ctx, listTodos, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Todo
+	var items []AppTodo
 	for rows.Next() {
-		var i Todo
+		var i AppTodo
 		if err := rows.Scan(&i.ID, &i.Title); err != nil {
 			return nil, err
 		}
@@ -70,7 +70,7 @@ func (q *Queries) ListTodos(ctx context.Context, arg ListTodosParams) ([]Todo, e
 }
 
 const updateTodo = `-- name: UpdateTodo :exec
-UPDATE todos SET title = $1 WHERE id = $2
+UPDATE app.todos SET title = $1 WHERE id = $2
 `
 
 type UpdateTodoParams struct {

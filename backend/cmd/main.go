@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/mori5321/mangahash/backend/internal"
+	"github.com/mori5321/mangahash/backend/internal/server"
 )
 
 func main() {
-	internal.RunApp()
+	server.Run()
 }

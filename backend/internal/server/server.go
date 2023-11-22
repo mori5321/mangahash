@@ -1,4 +1,4 @@
-package internal
+package server
 
 import (
 	"context"
@@ -24,22 +24,45 @@ func router(dbConn *pgx.Conn) *http.ServeMux {
 	return mux
 }
 
-func RunApp() {
-	ctx := context.Background()
-	// From local
+type AppConfig struct {
+	AppPort    uint16
+	DBUser     string
+	DBName     string
+	DBHost     string
+	DBPassword string
+}
+
+func App(ctx context.Context, conf AppConfig, readyChForTest chan<- bool) {
 	// dbConn, err := pgx.Connect(ctx, "user=postgres dbname=docker sslmode=disable host=localhost port=5430 password=password")
 	// For docker-compose
-	dbConn, err := pgx.Connect(ctx, "user=postgres dbname=docker sslmode=disable host=db password=password")
-	if err != nil {
-		log.Fatal(err)
-	}
+	dbConn, err := pgx.Connect(ctx, fmt.Sprintf("user=%s dbname=%s host=%s password=%s\n", conf.DBUser, conf.DBName, conf.DBHost, conf.DBPassword))
 	defer dbConn.Close(ctx)
 
 	router := router(dbConn)
 
-	fmt.Println("Server is now running on port 9090")
-	err = http.ListenAndServe(":9090", router)
+	if readyChForTest != nil {
+		readyChForTest <- true
+	}
+
+	fmt.Printf("Server is now running on port %d\n", conf.AppPort)
+	port := fmt.Sprintf(":%d", conf.AppPort)
+	err = http.ListenAndServe(port, router)
+
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func Run() {
+	fmt.Printf("We're launching a server now ... \n")
+	ctx := context.Background()
+	conf := AppConfig{
+		AppPort:    9090,
+		DBUser:     "postgres",
+		DBName:     "docker",
+		DBHost:     "db",
+		DBPassword: "password",
+	}
+
+	App(ctx, conf, nil)
 }
