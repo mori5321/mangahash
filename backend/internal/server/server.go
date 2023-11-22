@@ -33,8 +33,6 @@ type AppConfig struct {
 }
 
 func App(ctx context.Context, conf AppConfig, readyChForTest chan<- bool) {
-	// dbConn, err := pgx.Connect(ctx, "user=postgres dbname=docker sslmode=disable host=localhost port=5430 password=password")
-	// For docker-compose
 	dbConn, err := pgx.Connect(ctx, fmt.Sprintf("user=%s dbname=%s host=%s password=%s\n", conf.DBUser, conf.DBName, conf.DBHost, conf.DBPassword))
 	defer dbConn.Close(ctx)
 

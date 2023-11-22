@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/mori5321/mangahash/backend/internal/todo"
+	"github.com/stretchr/testify/require"
 )
 
 var conf AppConfig = AppConfig{
@@ -40,16 +41,11 @@ var appHost string = fmt.Sprintf("http://localhost:%d", conf.AppPort)
 
 func TestHealthzHandler(t *testing.T) {
 	url := appHost + "/healthz"
-	// Send a request to the server
-	res, err := http.Get(url)
-	if err != nil {
-		panic(err)
-	}
 
-	// Check the status code is what we expect.
-	if status := res.StatusCode; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
+	res, err := http.Get(url)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, res.StatusCode)
 }
 
 func TestTodosHandler(t *testing.T) {
@@ -60,132 +56,77 @@ func TestTodosHandler(t *testing.T) {
 		Title: "test",
 	}
 	j, err := json.Marshal(td)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	reader := bytes.NewReader(j)
 	_, err = http.Post(url, "application/json", reader)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	// GET /todos ----------
 	res, err := http.Get(url)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	status := res.StatusCode
-	if status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
+	require.Equal(t, http.StatusOK, status)
 
 	body := res.Body
 	defer body.Close()
 
 	var todos []todo.TodoDTO
 	err = json.NewDecoder(body).Decode(&todos)
-	if err != nil {
-		panic(err)
-	}
-
-	if len(todos) != 1 {
-		t.Errorf("GET /todos is supposed to return array with length = %d: got %d", 1, len(todos))
-	}
+	require.NoError(t, err)
+	require.Equal(t, 1, len(todos))
 
 	// GET /todos/:id --------
 	first := todos[0]
 	res, err = http.Get(url + "/" + first.ID)
-	if err != nil {
-		panic(err)
-	}
-
-	if status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
 
 	var result todo.TodoDTO
 	err = json.NewDecoder(res.Body).Decode(&result)
-	if err != nil {
-		panic(err)
-	}
-
-	if result.Title != td.Title {
-		t.Errorf("GET /todos/:id is supposed to return title = %s: got %s", td.Title, result.Title)
-	}
+	require.NoError(t, err)
+	require.Equal(t, first.ID, result.ID)
 
 	// PUT /todos/:id --------
-	updated := todo.UpdateTodoInput{
+	updateTodo := todo.UpdateTodoInput{
 		Title: "updated",
 	}
-
-	j, err = json.Marshal(updated)
-	if err != nil {
-		panic(err)
-	}
-
+	j, err = json.Marshal(updateTodo)
+	require.NoError(t, err)
 	reader = bytes.NewReader(j)
 	req, err := http.NewRequest(http.MethodPut, url+"/"+first.ID, reader)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	http.DefaultClient.Do(req)
 
 	res, err = http.Get(url + "/" + first.ID)
-	if err != nil {
-		panic(err)
-	}
-
-	if status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
 
 	err = json.NewDecoder(res.Body).Decode(&result)
-	if err != nil {
-		panic(err)
-	}
-
-	if result.Title != updated.Title {
-		t.Errorf("GET /todos/:id is supposed to return title = %s: got %s", td.Title, result.Title)
-	}
+	require.NoError(t, err)
+	require.Equal(t, updateTodo.Title, result.Title)
 
 	// DELETE /todos/:id -----
 	req, err = http.NewRequest(http.MethodDelete, url+"/"+first.ID, nil)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	res, err = http.DefaultClient.Do(req)
-
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
 
 	res, err = http.Get(url + "/" + first.ID)
-	if err != nil {
-		panic(err)
-	}
-
-	if res.StatusCode != http.StatusNotFound {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusNotFound)
-	}
+	require.NoError(t, err)
+	require.Equal(t, http.StatusNotFound, res.StatusCode)
 
 	res, err = http.Get(url)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	body = res.Body
 	defer body.Close()
 
 	err = json.NewDecoder(body).Decode(&todos)
-	if err != nil {
-		panic(err)
-	}
-
-	if len(todos) != 0 {
-		t.Errorf("GET /todos is supposed to return array with length = %d: got %d", 0, len(todos))
-	}
+	require.NoError(t, err)
+	require.Equal(t, 0, len(todos))
 }
