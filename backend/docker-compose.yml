@@ -57,6 +57,9 @@ services:
         target: /root/.cache/go-test
     ports:
       - 9090:9090
+    depends_on:
+      - db
+      - testdb
     command: sh -c 'go mod tidy && air'
 
 volumes:
