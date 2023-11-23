@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mangahash-service
+spec:
+  type: NodePort
+  selector:
+    app: mangahash-api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 9090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mangahash-api
+  labels:
+    app: mangahash-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mangahash-api
+  template:
+    metadata:
+      labels:
+        app: mangahash-api
+    spec:
+      containers:
+      - name: mangahash-api
+        image: mangahash-api:deepblue
+        ports:
+        - containerPort: 9090
+
+
