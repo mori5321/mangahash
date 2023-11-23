@@ -38,7 +38,7 @@ services:
       # - '5432:5432'
   api:
     container_name: api
-    image: mangahash-api:deepblue
+    image: mangahash-api:local
     build:
       context: .
       target: dev

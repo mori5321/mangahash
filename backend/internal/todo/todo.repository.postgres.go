@@ -50,6 +50,21 @@ func (repo *TodoRepositoryPostgres) List(pagination *ListPagination) ([]Todo, er
 	return todos, nil
 }
 
+func (repo *TodoRepositoryPostgres) Fetch(id string) (*Todo, error) {
+	query := queries.New(repo.dbConn)
+
+	uid := uuid.Must(uuid.FromString(id))
+
+	model, err := query.FetchTodo(context.TODO(), uid)
+	if err != nil {
+		return nil, common.NotFoundError
+	}
+
+	todo := repo.toEntity(model)
+
+	return &todo, nil
+}
+
 func (repo *TodoRepositoryPostgres) Store(todo Todo) error {
 	ctx := context.Background() // ?: context の扱いよくわからない
 	query := queries.New(repo.dbConn)
@@ -78,21 +93,6 @@ func (repo *TodoRepositoryPostgres) Store(todo Todo) error {
 
 		return err
 	}
-}
-
-func (repo *TodoRepositoryPostgres) Fetch(id string) (*Todo, error) {
-	query := queries.New(repo.dbConn)
-
-	uid := uuid.Must(uuid.FromString(id))
-
-	model, err := query.FetchTodo(context.TODO(), uid)
-	if err != nil {
-		return nil, common.NotFoundError
-	}
-
-	todo := repo.toEntity(model)
-
-	return &todo, nil
 }
 
 func (repo *TodoRepositoryPostgres) Delete(id string) error {

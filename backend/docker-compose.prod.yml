@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   api:
+    image: mangahash-api:prod
     build:
       context: .
       target: runner
