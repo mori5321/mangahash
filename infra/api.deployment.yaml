@@ -4,7 +4,7 @@ kind: Service
 metadata:
   name: mangahash-service
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: mangahash-api
   ports:
@@ -19,7 +19,7 @@ metadata:
   labels:
     app: mangahash-api
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: mangahash-api
@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: mangahash-api
-        image: mangahash-api:deepblue
+        image: mangahash-api:prod
         ports:
         - containerPort: 9090
 
