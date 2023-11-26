@@ -3,7 +3,7 @@ version: "3.8"
 services:
   db:
     container_name: db
-    image: postgres:13.12-alpine@sha256:ebb415b13f1ee1a2523114d5e46082044d1c62816fd108c666c53eef5878f5f3
+    image: postgres:13.12-alpine
     environment:
       - POSTGRES_DB=docker
       - POSTGRES_USER=postgres
@@ -26,7 +26,7 @@ services:
   # TODO: build ephemeral test db
   testdb:
     container_name: testdb
-    image: postgres:13.12-alpine@sha256:ebb415b13f1ee1a2523114d5e46082044d1c62816fd108c666c53eef5878f5f3
+    image: postgres:13.12-alpine
     environment:
       - POSTGRES_DB=test
       - POSTGRES_USER=test
@@ -63,7 +63,7 @@ services:
       - db
       - testdb
     command: sh -c 'go mod tidy && air'
-
+    env_file: .env
 volumes:
   db:
   gomod:

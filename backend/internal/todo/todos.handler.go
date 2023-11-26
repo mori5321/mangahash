@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/mori5321/mangahash/backend/internal/common"
+	"github.com/mori5321/mangahash/backend/queries"
 )
 
-func TodosHandler(dbConn *pgx.Conn) http.HandlerFunc {
+func TodosHandler(dbConn queries.DBTX) http.HandlerFunc {
 	idGenerator := common.NewUUIDGenerator()
 
-	todoRepo := NewTodoRepositoryMem()
-	// todoRepo := NewTodoRepositoryPostgres(dbConn)
+	// todoRepo := NewTodoRepositoryMem()
+	todoRepo := NewTodoRepositoryPostgres(dbConn)
 	stores := newStores(idGenerator, todoRepo)
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -62,10 +62,10 @@ func addHandler(r *http.Request, stores Stores) (*TodoDTO, error) {
 	return todo, nil
 }
 
-func TodoHandler(dbConn *pgx.Conn) http.HandlerFunc {
+func TodoHandler(dbConn queries.DBTX) http.HandlerFunc {
 	idGenerator := common.NewUUIDGenerator()
-	// odoRepo := NewTodoRepositoryPostgres(dbConn)
-	todoRepo := NewTodoRepositoryMem()
+	todoRepo := NewTodoRepositoryPostgres(dbConn)
+	// todoRepo := NewTodoRepositoryMem()
 	stores := newStores(idGenerator, todoRepo)
 
 	return func(w http.ResponseWriter, r *http.Request) {

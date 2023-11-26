@@ -4,16 +4,15 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/mori5321/mangahash/backend/internal/common"
 	"github.com/mori5321/mangahash/backend/queries"
 )
 
 type TodoRepositoryPostgres struct {
-	dbConn *pgx.Conn
+	dbConn queries.DBTX
 }
 
-func NewTodoRepositoryPostgres(dbConn *pgx.Conn) *TodoRepositoryPostgres {
+func NewTodoRepositoryPostgres(dbConn queries.DBTX) *TodoRepositoryPostgres {
 	return &TodoRepositoryPostgres{dbConn: dbConn}
 }
 
