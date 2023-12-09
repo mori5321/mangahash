@@ -14,15 +14,15 @@ import (
 	"github.com/mori5321/mangahash/backend/queries"
 )
 
-func router(dbConn queries.DBTX) *http.ServeMux {
+func router(dbPool queries.DBTX) *http.ServeMux {
 	// 参考
 	// https://ema-hiro.hatenablog.com/entry/2018/10/22/015427
 	// https://journal.lampetty.net/entry/understanding-http-handler-in-go
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", healthz.HealthzHandler)
-	mux.HandleFunc("/todos", todo.TodosHandler(dbConn))
-	mux.HandleFunc("/todos/", todo.TodoHandler(dbConn))
+	mux.HandleFunc("/todos", todo.TodosHandler(dbPool))
+	mux.HandleFunc("/todos/", todo.TodoHandler(dbPool))
 
 	return mux
 }
