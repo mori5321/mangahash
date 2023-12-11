@@ -42,11 +42,11 @@ services:
     build:
       context: .
       target: dev
-      dockerfile: ./Dockerfile
+      dockerfile: ./backend/Dockerfile
     working_dir: /app
     volumes:
       - type: bind
-        source: ./
+        source: ./backend
         target: /app
       - type: volume
         source: gomod

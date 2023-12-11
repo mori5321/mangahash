@@ -71,11 +71,8 @@ func App(ctx context.Context, conf AppConfig, readyChForTest chan<- bool) {
 	}
 
 	fmt.Printf("Server is now running on port %d\n", conf.AppPort)
-	fmt.Print("Here2")
 	port := fmt.Sprintf(":%d", conf.AppPort)
-	fmt.Print("Here3")
 	err = http.ListenAndServe(port, router)
-	fmt.Print("Here4")
 
 	if err != nil {
 		log.Fatal(err)
@@ -92,15 +89,13 @@ func Run() {
 	dbuser := os.Getenv("DATABASE_USER")
 
 	tmpdbport, err := strconv.ParseUint(os.Getenv("DATABASE_PORT"), 10, 16)
-	fmt.Printf("dbhost %s, tmpdbport: %d\n", dbhost, tmpdbport)
 	if err != nil {
-		fmt.Print("Here1")
 		log.Fatal(err)
 	}
 	dbport := uint16(tmpdbport)
 
 	conf := AppConfig{
-		AppPort:    9090,
+		AppPort:    9090, // TODO: get from env
 		DBUser:     dbuser,
 		DBName:     dbname,
 		DBPort:     dbport,

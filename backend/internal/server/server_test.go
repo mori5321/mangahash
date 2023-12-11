@@ -18,6 +18,7 @@ var conf AppConfig = AppConfig{
 	DBUser:     "test",
 	DBName:     "test",
 	DBHost:     "testdb",
+	DBPort:     5432,
 	DBPassword: "password",
 }
 

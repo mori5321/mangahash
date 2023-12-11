@@ -2,3 +2,4 @@
   - https://github.com/michimani/gotwi これがよさそう
 - [ ] infraはCloud Runにしましょう
     - [ ] k8sさわりたかったらあとで。全体が完成してからやれ。
+- [ ] monorepo by go.work をやってみたい

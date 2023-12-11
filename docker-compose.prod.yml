@@ -6,4 +6,4 @@ services:
     build:
       context: .
       target: runner
-      dockerfile: ./Dockerfile
+      dockerfile: ./backend/Dockerfile
