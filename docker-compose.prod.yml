@@ -7,3 +7,9 @@ services:
       context: .
       target: runner
       dockerfile: ./backend/Dockerfile
+  crawler:
+    image: mangahash-crawler:prod
+    build:
+      context: .
+      target: runner
+      dockerfile: ./crawler/Dockerfile

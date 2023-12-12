@@ -49,13 +49,13 @@ services:
         source: ./backend
         target: /app
       - type: volume
-        source: gomod
+        source: api-gomod
         target: /go/pkg/mod
       - type: volume
-        source: gobuild
+        source: api-gobuild
         target: /root/.cache/go-build
       - type: volume
-        source: gotest
+        source: api-gotest
         target: /root/.cache/go-test
     ports:
       - 9090:9090
@@ -64,8 +64,36 @@ services:
       - testdb
     command: sh -c 'go mod tidy && air'
     env_file: .env
+  crawler:
+    container_name: crawler
+    image: mangahash-crawler:local
+    build:
+      context: .
+      target: dev
+      dockerfile: ./crawler/Dockerfile
+    volumes:
+      - type: bind
+        source: ./crawler
+        target: /app
+      - type: volume
+        source: crawler-gomod
+        target: /go/pkg/mod
+      - type: volume
+        source: crawler-gobuild
+        target: /root/.cache/go-build
+      - type: volume
+        source: crawler-gotest
+        target: /root/.cache/go-test
+    ports:
+      - 5050:5050
+    command: sh -c 'go mod tidy && air'
+    env_file: .env
 volumes:
   db:
-  gomod:
-  gobuild:
-  gotest:
+  api-gomod:
+  api-gobuild:
+  api-gotest:
+  crawler-gomod:
+  crawler-gobuild:
+  crawler-gotest:
+
