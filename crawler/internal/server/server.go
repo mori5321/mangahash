@@ -12,6 +12,11 @@ import (
 func router() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", healthz.HealthzHandler)
+
+	mux.HandleFunc("/crawler/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Yet to be implemented")
+	})
+
 	return mux
 }
 
